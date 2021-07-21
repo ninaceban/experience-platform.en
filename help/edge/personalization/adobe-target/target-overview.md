@@ -130,46 +130,47 @@ For more information, see [Categories for audiences](https://experienceleague.ad
 
 ### Response Tokens
 
-Response Tokens are used mainly by our customers when they want to send metadata to third parties like Google, Facebook etc.
-We are returning the metadata at the item level:
+Response Tokens are mainly used to send metadata to third parties like Google, Facebook, etc. Response Tokens are returned
+in the `meta` field within `propositions` -> `items`. Here is a sample:
 ```          
-"id": "AT:eyJhY3Rpdml0eUlkIjoiMTI2NzM2IiwiZXhwZXJpZW5jZUlkIjoiMCJ9",
-"scope": "__view__",
-"scopeDetails": { ... },
-"renderAttempted": true,
-"items": [{
-        "id": "0",
-        "schema": "https://ns.adobe.com/personalization/dom-action",
-        "meta": {
-            "experience.id": "0",
-            "activity.id": "126736",
-            "offer.name": "Default Content",
-            "offer.id": "0"
-            }
-        }]
-  ```
+{
+  "id": "AT:eyJhY3Rpdml0eUlkIjoiMTI2NzM2IiwiZXhwZXJpZW5jZUlkIjoiMCJ9",
+  "scope": "__view__",
+  "scopeDetails": ...,
+  "renderAttempted": true,
+  "items": [
+    {
+      "id": "0",
+      "schema": "https://ns.adobe.com/personalization/dom-action",
+      "meta": {
+        "experience.id": "0",
+        "activity.id": "126736",
+        "offer.name": "Default Content",
+        "offer.id": "0"
+      }
+    }
+  ]
+}
+```
+To be able to collect the response tokens, we will have to subscribe to `alloy.sendEvent` promise, iterate through `propositions`
+and extract the details from `items` -> `meta`. Every `proposition` will have a `renderAttempted` boolean field 
+indicating whether the `proposition` was rendered or not.
 
-In order to use the response tokens you'll need to wait till the `sendEvent` command promise resolves and use the `propositions` object.
-`Propositions` object is an array of decisions. Every decision will have a `renderAttempted` boolean flag (true or false).
-When you  have automatic rendering enabled, propositions  array will contain:
-
+When automatic rendering is enabled, propositions array will contain:
 #### On Page-Load:
-- formed based composed decisions with `renderAttempted: false`
-- page-load decisions with `renderAttempted: true`
-- current view decisions from cache with `renderAttempted: true`
+- Form Based Composer based `propositions` with `renderAttempted` flag set to `false`
+- Visual Experience Composer based propositions with `renderAttempted` flag set to `true`
+- Visual Experience Composer based propositions for a Single Page Application view with `renderAttempted` flag set to `true`
+#### On View - change (for cached views):
+- Visual Experience Composer based propositions for a Single Page Application view with `renderAttempted` flag set to `true`
 
-#### On View - change (when only cache is used):
-- current view decisions with `renderAttempted: true`
-
-When you  have automatic rendering disabled, propositions  array will contain:
-
+When automatic rendering is disabled, propositions array will contain:
 #### On Page-Load:
-- formed based composed decisions with `renderAttempted: false`
-- page-load decisions with `renderAttempted: false`
-- current view decisions from cache with `renderAttempted: false`
-
-#### On View - change (when only cache is used):
-- current view decisions with `renderAttempted: false`
+- Form Based Composer based `propositions` with `renderAttempted` flag set to `false`
+- Visual Experience Composer based propositions with `renderAttempted` flag set to `false`
+- Visual Experience Composer based propositions for a Single Page Application view with `renderAttempted` flag set to `false`
+#### On View - change (for cached views):
+- Visual Experience Composer based propositions for a Single Page Application view with `renderAttempted` flag set to `false`
 
 ### Single profile update
 
